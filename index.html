@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <!-- Meta viewport diatur agar mencegah zoom yang tidak disengaja di HP -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Pembuktian Sudut Eksterior Segitiga</title>
+    <style>
+        :root {
+            --bg-body: #e2e8f0;
+            --bg-app: #ffffff;
+            --bg-canvas: #f1f5f9; 
+            --primary-text: #0f172a;
+            --secondary-text: #475569;
+            --accent-green: #34d399;
+            --accent-pink: #f472b6;
+            --triangle-fill: #fef08a;
+            --border-color: #cbd5e1;
+            --primary-blue: #3b82f6;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 30px 15px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: var(--bg-body);
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            user-select: none;
+        }
+
+        #app-container {
+            width: 100%;
+            max-width: 980px; /* Lebar maksimal dibatasi, tapi bisa mengecil */
+            background-color: var(--bg-app);
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* 1. Area Header & Teks */
+        .header-section {
+            padding: 25px 30px 15px 30px;
+        }
+
+        .title-wrapper {
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .title-wrapper h1 {
+            margin: 0;
+            font-size: 1.8rem;
+            color: var(--primary-text);
+            line-height: 1.3;
+        }
+
+        .title-wrapper .author {
+            margin: 5px 0 0 0;
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: var(--primary-blue);
+        }
+
+        .info-box {
+            background-color: #eff6ff;
+            border-left: 5px solid var(--primary-blue);
+            padding: 14px 20px;
+            border-radius: 0 8px 8px 0;
+            box-shadow: 0 2px 5px rgba(59, 130, 246, 0.05);
+        }
+
+        .info-box p {
+            margin: 0;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            color: #1e293b;
+        }
+
+        .instruction-text {
+            margin: 15px 0 0 0;
+            color: var(--secondary-text);
+            font-size: 0.95rem;
+            text-align: left;
+        }
+
+        /* 2. Area Kanvas */
+        .canvas-section {
+            padding: 0 30px;
+        }
+
+        .canvas-wrapper {
+            width: 100%;
+            aspect-ratio: 15 / 8; /* Mempertahankan rasio 900x480 */
+            height: auto;
+            background-color: var(--bg-canvas);
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            position: relative;
+            box-shadow: inset 0 4px 10px rgba(0,0,0,0.03);
+            overflow: hidden; 
+        }
+
+        canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+            cursor: grab;
+            touch-action: none; /* Mencegah layar scroll saat canvas di-swipe di HP */
+        }
+        
+        canvas:active {
+            cursor: grabbing;
+        }
+
+        /* 3. Area Kontrol di Bawah */
+        .control-section {
+            padding: 20px 30px 25px 30px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .control-panel {
+            background: #ffffff;
+            padding: 15px 35px;
+            border-radius: 50px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.06);
+            border: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            gap: 30px;
+            width: max-content;
+            max-width: 100%;
+        }
+
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        label {
+            font-weight: 600;
+            color: var(--primary-text);
+            font-size: 1.05em;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        input[type="range"] {
+            width: 250px;
+            max-width: 100%;
+            height: 8px;
+            -webkit-appearance: none;
+            background: #e2e8f0;
+            border-radius: 10px;
+            outline: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 24px;
+            height: 24px;
+            background: var(--primary-blue);
+            border-radius: 50%;
+            cursor: pointer;
+            border: 3px solid #fff;
+            box-shadow: 0 2px 6px rgba(59, 130, 246, 0.4);
+            transition: transform 0.1s;
+        }
+
+        input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.15);
+        }
+
+        input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            accent-color: var(--primary-blue);
+        }
+        
+        .divider {
+            width: 2px; 
+            height: 30px; 
+            background-color: var(--border-color);
+        }
+
+        /* ----- MEDIA QUERIES UNTUK TAMPILAN HP ----- */
+        @media (max-width: 768px) {
+            body {
+                padding: 15px 10px;
+            }
+            .header-section {
+                padding: 20px 20px 10px 20px;
+            }
+            .title-wrapper h1 {
+                font-size: 1.4rem;
+            }
+            .info-box p, .instruction-text {
+                font-size: 0.85rem;
+            }
+            .canvas-section {
+                padding: 0 15px;
+            }
+            /* Ubah layout panel menjadi bersusun vertikal di HP */
+            .control-section {
+                padding: 15px 20px 20px 20px;
+            }
+            .control-panel {
+                flex-direction: column;
+                gap: 15px;
+                padding: 15px 20px;
+                border-radius: 16px;
+                width: 100%;
+            }
+            .control-group {
+                width: 100%;
+                justify-content: space-between;
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+            .control-group.checkbox-group {
+                flex-direction: row;
+                justify-content: flex-start;
+            }
+            input[type="range"] {
+                width: 100%;
+            }
+            .divider {
+                width: 100%;
+                height: 1px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="app-container">
+        
+        <!-- 1. HEADER & TEKS INFO -->
+        <div class="header-section">
+            <div class="title-wrapper">
+                <h1>Teorema Sudut Eksterior Segitiga</h1>
+                <p class="author">By Mathnology</p>
+            </div>
+            
+            <div class="info-box">
+                <p>
+                    Sudut eksterior segitiga adalah <strong>sudut luar</strong> yang terbentuk dari <strong>perpanjangan salah satu sisi</strong> segitiga. <strong>Besar sudut eksterior sama dengan jumlah dua sudut dalam</strong> segitiga yang <strong>tidak berdekatan</strong> dengannya.
+                </p>
+            </div>
+
+            <p class="instruction-text">💡 <strong>Instruksi:</strong> Geser titik A, B, atau C pada segitiga di bawah. Kemudian gunakan slider untuk melihat pembuktiannya.</p>
+        </div>
+
+        <!-- 2. AREA KANVAS INTERAKTIF -->
+        <div class="canvas-section">
+            <div class="canvas-wrapper">
+                <!-- Logika ukurannya tetap 900x480 agar rasio hitungan matematiknya akurat -->
+                <canvas id="geometryCanvas" width="900" height="480"></canvas>
+            </div>
+        </div>
+        
+        <!-- 3. PANEL KONTROL BAWAH -->
+        <div class="control-section">
+            <div class="control-panel">
+                <div class="control-group">
+                    <label for="slider">Geser Pembuktian:</label>
+                    <input type="range" id="slider" min="0" max="100" value="0">
+                </div>
+                <div class="divider"></div>
+                <div class="control-group checkbox-group">
+                    <label>
+                        <input type="checkbox" id="show-angles" checked>
+                        Tampilkan Angka
+                    </label>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        const canvas = document.getElementById('geometryCanvas');
+        const ctx = canvas.getContext('2d');
+        const slider = document.getElementById('slider');
+        const showAnglesCb = document.getElementById('show-angles');
+
+        let A = { x: 420, y: 100 }; 
+        let B = { x: 150, y: 380 }; 
+        let C = { x: 650, y: 380 }; 
+
+        const RADIUS = 60; 
+
+        let draggingPoint = null;
+
+        // FUNGSI BARU: Mendapatkan koordinat kursor yang akurat meskipun layarnya di-scale (HP)
+        function getPointerPos(e) {
+            const rect = canvas.getBoundingClientRect();
+            let clientX = e.clientX;
+            let clientY = e.clientY;
+
+            // Jika eventnya adalah sentuhan HP (Touch)
+            if (e.touches && e.touches.length > 0) {
+                clientX = e.touches[0].clientX;
+                clientY = e.touches[0].clientY;
+            }
+
+            // Skalakan ke koordinat internal canvas (900x480)
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+
+            return {
+                x: (clientX - rect.left) * scaleX,
+                y: (clientY - rect.top) * scaleY
+            };
+        }
+
+        // HANDLER UNTUK KLIK/SENTUH (Mulai Geser)
+        function handlePointerDown(e) {
+            e.preventDefault(); // Mencegah perilaku default browser
+            const pos = getPointerPos(e);
+            const points = [A, B, C];
+            
+            for (let p of points) {
+                if (Math.hypot(pos.x - p.x, pos.y - p.y) < 45) { // Area sentuh diperlebar sedikit untuk HP
+                    draggingPoint = p;
+                    slider.value = 0; 
+                    draw();
+                    return;
+                }
+            }
+        }
+
+        // HANDLER UNTUK GESER (Bergerak)
+        function handlePointerMove(e) {
+            if (draggingPoint) {
+                e.preventDefault();
+                const pos = getPointerPos(e);
+
+                const margin = 40;
+                const minX = margin;
+                const maxX = canvas.width - margin;
+                const minY = margin;
+                const maxY = canvas.height - margin; 
+
+                draggingPoint.x = Math.max(minX, Math.min(pos.x, maxX));
+                draggingPoint.y = Math.max(minY, Math.min(pos.y, maxY));
+                
+                draw();
+            }
+        }
+
+        // HANDLER UNTUK MELEPAS (Selesai Geser)
+        function handlePointerUp() {
+            draggingPoint = null;
+        }
+
+        // Daftarkan event pendengar untuk Mouse (PC) dan Sentuhan (HP/Tablet)
+        canvas.addEventListener('mousedown', handlePointerDown);
+        canvas.addEventListener('touchstart', handlePointerDown, { passive: false });
+        
+        canvas.addEventListener('mousemove', handlePointerMove);
+        canvas.addEventListener('touchmove', handlePointerMove, { passive: false });
+
+        window.addEventListener('mouseup', handlePointerUp);
+        window.addEventListener('touchend', handlePointerUp);
+        window.addEventListener('mouseleave', handlePointerUp);
+        
+        slider.addEventListener('input', draw);
+        showAnglesCb.addEventListener('change', draw);
+
+        // --- MATEMATIKA GEOMETRI ---
+        function getInteriorWedge(center, p1, p2) {
+            let a1 = Math.atan2(p1.y - center.y, p1.x - center.x);
+            let a2 = Math.atan2(p2.y - center.y, p2.x - center.x);
+            
+            while (a2 < a1) a2 += 2 * Math.PI;
+            if (a2 - a1 > Math.PI) {
+                let temp = a1;
+                a1 = a2;
+                a2 = temp + 2 * Math.PI; 
+            }
+            return { start: a1, end: a2 };
+        }
+
+        function getAngleDegree(center, p1, p2) {
+            const wedge = getInteriorWedge(center, p1, p2);
+            let rad = wedge.end - wedge.start;
+            return Math.round(rad * 180 / Math.PI);
+        }
+
+        // --- FUNGSI MENGGAMBAR ---
+        function drawArc(center, start, end, color, radius, isMoving = false, opacity = 1) {
+            ctx.beginPath();
+            ctx.moveTo(center.x, center.y);
+            ctx.arc(center.x, center.y, radius, start, end, false);
+            ctx.closePath();
+            
+            ctx.globalAlpha = opacity;
+            ctx.fillStyle = color;
+            ctx.fill();
+            
+            if (isMoving) {
+                ctx.strokeStyle = '#1e293b';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+            }
+            ctx.globalAlpha = 1.0;
+        }
+
+        function drawVertex(point, label, offsetY = -30) {
+            ctx.shadowColor = 'rgba(0, 0, 0, 0.2)';
+            ctx.shadowBlur = 8;
+            ctx.shadowOffsetX = 0;
+            ctx.shadowOffsetY = 4;
+
+            ctx.beginPath();
+            ctx.arc(point.x, point.y, 14, 0, Math.PI * 2);
+            ctx.fillStyle = '#ffffff';
+            ctx.fill();
+            ctx.strokeStyle = '#334155';
+            ctx.lineWidth = 3;
+            ctx.stroke();
+
+            ctx.shadowColor = 'transparent';
+
+            ctx.fillStyle = '#1e293b';
+            ctx.font = 'bold 18px "Segoe UI", sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(label, point.x, point.y + offsetY);
+        }
+
+        function drawAngleText(center, start, end, text, radiusOffset) {
+            if (!showAnglesCb.checked) return;
+            
+            let midAngle = (start + end) / 2;
+            let textX = center.x + Math.cos(midAngle) * radiusOffset;
+            let textY = center.y + Math.sin(midAngle) * radiusOffset;
+
+            ctx.font = 'bold 15px "Segoe UI", sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 4;
+            ctx.strokeText(text + "°", textX, textY);
+            
+            ctx.fillStyle = '#0f172a';
+            ctx.fillText(text + "°", textX, textY);
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            const wedgeA = getInteriorWedge(A, C, B);
+            const wedgeB = getInteriorWedge(B, C, A);
+            const degA = getAngleDegree(A, B, C);
+            const degB = getAngleDegree(B, C, A);
+            const degExt = degA + degB;
+
+            // 1. Gambar Garis Ekstensi
+            const dirBC = Math.atan2(C.y - B.y, C.x - B.x);
+            const extX = C.x + Math.cos(dirBC) * 1500;
+            const extY = C.y + Math.sin(dirBC) * 1500;
+
+            ctx.beginPath();
+            ctx.moveTo(B.x, B.y);
+            ctx.lineTo(extX, extY);
+            ctx.strokeStyle = '#94a3b8';
+            ctx.lineWidth = 3;
+            ctx.setLineDash([10, 10]); 
+            ctx.stroke();
+            ctx.setLineDash([]); 
+
+            // 2. Gambar Segitiga Terisi (FILL)
+            ctx.beginPath();
+            ctx.moveTo(A.x, A.y);
+            ctx.lineTo(B.x, B.y);
+            ctx.lineTo(C.x, C.y);
+            ctx.closePath();
+            ctx.fillStyle = '#fef08a'; 
+            ctx.fill();
+
+            // 3. Gambar Sudut Interior 
+            drawArc(A, wedgeA.start, wedgeA.end, '#34d399', RADIUS);
+            drawArc(B, wedgeB.start, wedgeB.end, '#f472b6', RADIUS);
+
+            // 4. Gambar Garis Tepi Segitiga (STROKE) DI ATAS Sudut
+            ctx.beginPath();
+            ctx.moveTo(A.x, A.y);
+            ctx.lineTo(B.x, B.y);
+            ctx.lineTo(C.x, C.y);
+            ctx.closePath();
+            ctx.strokeStyle = '#475569';
+            ctx.lineWidth = 3;
+            ctx.stroke();
+            
+            // 5. Gambar Teks Sudut
+            drawAngleText(A, wedgeA.start, wedgeA.end, degA, RADIUS * 0.65);
+            drawAngleText(B, wedgeB.start, wedgeB.end, degB, RADIUS * 0.65);
+
+            // 6. Gambar Target Bayangan Eksterior
+            const targetBStart = wedgeB.start;
+            const targetBEnd = wedgeB.end;
+            const targetAStart = wedgeA.start + Math.PI;
+            const targetAEnd = wedgeA.end + Math.PI;
+
+            drawArc(C, targetBStart, targetBEnd, '#f472b6', RADIUS, false, 0.25);
+            drawArc(C, targetAStart, targetAEnd, '#34d399', RADIUS, false, 0.25);
+
+            if (showAnglesCb.checked && slider.value < 10) {
+                const textAngle = dirBC - Math.PI/4;
+                ctx.fillStyle = '#64748b';
+                ctx.font = '600 16px "Segoe UI"';
+                ctx.textAlign = 'left';
+                
+                let textX = C.x + Math.cos(textAngle)*RADIUS*1.2;
+                let textY = C.y + Math.sin(textAngle)*RADIUS*1.2;
+                
+                ctx.strokeStyle = '#f1f5f9';
+                ctx.lineWidth = 4;
+                ctx.strokeText(`Eksterior = ?`, textX, textY);
+                ctx.fillText(`Eksterior = ?`, textX, textY);
+            }
+
+            // 7. Animasi Bergerak
+            let t = parseFloat(slider.value) / 100;
+
+            if (t > 0) {
+                let animBx = B.x + (C.x - B.x) * t;
+                let animBy = B.y + (C.y - B.y) * t;
+                drawArc({x: animBx, y: animBy}, wedgeB.start, wedgeB.end, '#f472b6', RADIUS, true);
+
+                let animAx = A.x + (C.x - A.x) * t;
+                let animAy = A.y + (C.y - A.y) * t;
+                let rotA = Math.PI * t; 
+                drawArc({x: animAx, y: animAy}, wedgeA.start + rotA, wedgeA.end + rotA, '#34d399', RADIUS, true);
+
+                if (t === 1 && showAnglesCb.checked) {
+                    const midExt = (targetBStart + targetAEnd) / 2;
+                    let textX = C.x + Math.cos(midExt)*RADIUS*1.4;
+                    let textY = C.y + Math.sin(midExt)*RADIUS*1.4;
+                    
+                    ctx.font = 'bold 18px "Segoe UI"';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    
+                    ctx.strokeStyle = '#f1f5f9';
+                    ctx.lineWidth = 4;
+                    ctx.strokeText(`${degExt}°`, textX, textY);
+                    
+                    ctx.fillStyle = '#0f172a';
+                    ctx.fillText(`${degExt}°`, textX, textY);
+                }
+            }
+
+            // 8. Gambar Titik Verteks
+            drawVertex(A, "A", -30); 
+            drawVertex(B, "B", -30); 
+            drawVertex(C, "C", 35);  
+        }
+
+        draw();
+    </script>
+</body>
+</html>
