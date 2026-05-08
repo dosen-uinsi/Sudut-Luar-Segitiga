@@ -13,7 +13,7 @@
             --secondary-text: #475569;
             --accent-green: #34d399;
             --accent-pink: #f472b6;
-            --accent-blue: #60a5fa; /* Warna untuk sudut C berpelurus */
+            --accent-blue: #60a5fa; 
             --triangle-fill: #fef08a;
             --border-color: #cbd5e1;
             --primary-blue: #3b82f6;
@@ -83,13 +83,14 @@
             font-size: 0.95rem;
             line-height: 1.6;
             color: #1e293b;
+            text-align: justify; 
         }
 
         .instruction-text {
             margin: 15px 0 0 0;
             color: var(--secondary-text);
             font-size: 0.95rem;
-            text-align: left;
+            text-align: justify; 
         }
 
         /* 2. Area Kanvas */
@@ -140,7 +141,7 @@
             gap: 25px;
             width: max-content;
             max-width: 100%;
-            flex-wrap: wrap; /* Mengizinkan pembungkusan otomatis jika layar kecil */
+            flex-wrap: wrap; 
             justify-content: center;
         }
 
@@ -150,7 +151,6 @@
             gap: 15px;
         }
 
-        /* Kelompok checkbox agar terlihat rapi */
         .checkbox-group {
             display: flex;
             gap: 20px;
@@ -250,7 +250,7 @@
                 width: 100%;
             }
             .divider {
-                display: none; /* Sembunyikan garis pemisah di versi mobile */
+                display: none; 
             }
         }
     </style>
@@ -271,7 +271,7 @@
                 </p>
             </div>
 
-            <p class="instruction-text">💡 <strong>Instruksi:</strong> Geser titik A, B, atau C pada segitiga di bawah. Gunakan centang dan slider untuk melihat pembuktiannya.</p>
+            <p class="instruction-text">💡 <strong>Instruksi:</strong> Geser titik A, B, atau C pada segitiga di bawah. Gunakan kotak centang (*checkbox*) dan *slider* untuk melihat pembuktian konsep sudut secara visual.</p>
         </div>
 
         <div class="canvas-section">
@@ -307,7 +307,7 @@
         const ctx = canvas.getContext('2d');
         const slider = document.getElementById('slider');
         const showAnglesCb = document.getElementById('show-angles');
-        const showStraightCb = document.getElementById('show-straight'); // Checkbox baru
+        const showStraightCb = document.getElementById('show-straight'); 
 
         let A = { x: 420, y: 120 }; 
         let B = { x: 150, y: 380 }; 
@@ -344,7 +344,7 @@
             for (let p of points) {
                 if (Math.hypot(pos.x - p.x, pos.y - p.y) < 45) { 
                     draggingPoint = p;
-                    slider.value = 0; 
+                    // slider.value = 0; // KODE INI TELAH DIHAPUS agar posisi slider tidak ter-reset saat digeser
                     draw();
                     return;
                 }
@@ -385,7 +385,7 @@
         
         slider.addEventListener('input', draw);
         showAnglesCb.addEventListener('change', draw);
-        showStraightCb.addEventListener('change', draw); // Event listener baru
+        showStraightCb.addEventListener('change', draw); 
 
         function getInteriorWedge(center, p1, p2) {
             let a1 = Math.atan2(p1.y - center.y, p1.x - center.x);
@@ -466,21 +466,19 @@
             ctx.fillText(text + "°", textX, textY);
         }
 
-        // Fungsi khusus untuk menggambar kotak persamaan di atas kanvas
         function drawEquationBox(text) {
             ctx.font = 'bold 16px "Segoe UI", sans-serif';
             const textWidth = ctx.measureText(text).width;
             
             const boxX = canvas.width / 2;
-            const boxY = 35; // Posisi di bagian atas kanvas
+            const boxY = 35; 
 
-            // Gambar Kotak Latar Belakang (Pill shape)
             ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
             ctx.shadowColor = 'rgba(0,0,0,0.1)';
             ctx.shadowBlur = 10;
             ctx.shadowOffsetY = 4;
             ctx.beginPath();
-            // Fallback untuk roundRect agar aman di semua browser
+            
             if (ctx.roundRect) {
                 ctx.roundRect(boxX - textWidth/2 - 20, boxY - 20, textWidth + 40, 40, 20);
             } else {
@@ -493,7 +491,6 @@
             ctx.lineWidth = 2;
             ctx.stroke();
 
-            // Tulis Teksnya
             ctx.fillStyle = '#0f172a';
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
@@ -505,13 +502,12 @@
 
             const wedgeA = getInteriorWedge(A, C, B);
             const wedgeB = getInteriorWedge(B, C, A);
-            const wedgeC = getInteriorWedge(C, A, B); // Hitung Sudut Dalam C
+            const wedgeC = getInteriorWedge(C, A, B); 
 
             const degA = getAngleDegree(A, B, C);
             const degB = getAngleDegree(B, C, A);
             const degExt = degA + degB;
             
-            // Menggunakan 180 - degExt untuk sudut C agar tidak ada masalah pembulatan desimal
             const degC = 180 - degExt; 
 
             // 1. Gambar Garis Ekstensi
@@ -537,12 +533,11 @@
             ctx.fillStyle = '#fef08a'; 
             ctx.fill();
 
-            // 3. Gambar Sudut Interior (Hijau, Pink, dan Biru jika Berpelurus aktif)
+            // 3. Gambar Sudut Interior 
             drawArc(A, wedgeA.start, wedgeA.end, '#34d399', RADIUS);
             drawArc(B, wedgeB.start, wedgeB.end, '#f472b6', RADIUS);
             
             if (showStraightCb.checked) {
-                // Tampilkan sudut dalam C dengan warna biru
                 drawArc(C, wedgeC.start, wedgeC.end, 'rgba(96, 165, 250, 0.8)', RADIUS);
                 drawAngleText(C, wedgeC.start, wedgeC.end, degC, RADIUS * 0.65);
             }
@@ -616,9 +611,8 @@
                 }
             }
 
-            // 8. Tampilkan Kotak Persamaan Berpelurus (Jika dicentang)
+            // 8. Tampilkan Kotak Persamaan Berpelurus 
             if (showStraightCb.checked && showAnglesCb.checked) {
-                // Teks menunjukkan bahwa Sudut Dalam C + Sudut Eksterior selalu 180°
                 drawEquationBox(`Sudut Lurus: Sudut Dalam C (${degC}°) + Sudut Luar (${degExt}°) = 180°`);
             }
 
